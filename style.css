@@ -10,10 +10,11 @@ body {
     flex-direction: column;
     width: 284px;
     height: 400px;
-    background-color: rgb(214, 227, 239);
+    background-color: rgb(102, 189, 255);
     align-items: center;
     padding: 18px 14px;
     border-radius: 10px;
+    border: 2px solid rgb(74, 148, 168);
 }
 
 #display {
@@ -48,6 +49,7 @@ button {
     font-size: 40px;
     border: 2px solid rgb(130, 187, 146);
     cursor: pointer;
+    text-align: center;
 }
 
 button:hover {
@@ -60,9 +62,12 @@ button:active {
     color: orange;
 }
 
-#zero,
-#cancel {
+#zero {
     width: 138px;
+}
+
+#cancel {
+    font-size: 30px;
 }
 
 
