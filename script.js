@@ -43,25 +43,6 @@ btnContainer.addEventListener('click', button => {
     if (button.target.id === 'backspace') userEntry.textContent = userEntry.textContent.slice(0, -1);
 });
 
-/*const buttons = document.querySelectorAll('button');
-buttons.forEach(button => {
-    if(button.id !== 'equals' && button.id !== 'cancel') {
-       button.addEventListener('click', event =>{userEntry.textContent += event.target.textContent;});
-    };
-
-    if(button.classList.contains('oper')){
-        button.addEventListener('click', event =>{
-            operBtns.forEach(btn => btn.style.color = 'white');
-            event.target.style.color = 'orange'; 
-        });
-    } else operBtns.forEach(btn => btn.style.color = 'white');
-
-    if(button.id === 'cancel') {
-        button.addEventListener('click', () => userEntry.textContent = '');    
-    };
-});*/
-
-
 
 function add(numOne, numTwo) {
     //prevents numbers being concatenated 
