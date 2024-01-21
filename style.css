@@ -3,6 +3,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: rgb(255, 79, 211);
 }
 
 #calc-container {
@@ -14,7 +15,7 @@ body {
     align-items: center;
     padding: 18px 14px;
     border-radius: 10px;
-    border: 2px solid rgb(74, 148, 168);
+    border: 8px solid rgb(185, 234, 255);
 }
 
 #display {
@@ -31,6 +32,7 @@ body {
     font-family: "Martian Mono", monospace;
     font-size: 20px;
     box-sizing: border-box;
+    white-space: pre-wrap;
 }
 
 #button-container {
@@ -57,7 +59,7 @@ button {
 button:hover {
     background-color: rgb(114, 166, 129);
     border: 2px solid rgb(114, 166, 129);
-    
+
 }
 
 button:active {
@@ -68,9 +70,15 @@ button:active {
     width: 138px;
 }
 
-#cancel {
-    font-size: 30px;
+#edit {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: space-between;
 }
 
+#edit button {
+    height: 28.5px;
+    font-size: 15px;
 
-
+}

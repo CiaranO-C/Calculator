@@ -1,29 +1,46 @@
 
-let userEntry = document.querySelector('#display');
+const userEntry = document.querySelector('#display');
 const btnContainer = document.querySelector('#button-container');
 const operBtns = document.querySelectorAll('.oper');
+const backspace = document.querySelector('#backspace');
 
-const equals = document.querySelector('#equals');
-equals.addEventListener('click', ()=>{
-    const result = shuntingYard(userEntry.textContent);
-    userEntry.textContent = result;
-})
+//handles keyboard entries
+window.addEventListener('keydown', event => {
+    if (!isNaN(event.key)) userEntry.textContent += event.key;
 
+    if (oper.hasOwnProperty(event.key)) {
+        userEntry.textContent += event.key;
+    };
+
+    if (event.key === '/') userEntry.textContent += '÷';
+
+    if (event.key === 'Enter') {
+        const result = shuntingYard(userEntry.textContent);
+        userEntry.textContent = result;
+    };
+});
+
+//handles button clicks
 btnContainer.addEventListener('click', button => {
-   if(button.target.id !== 'button-container'){
-    if(button.target.id !== 'equals' && button.target.id !== 'cancel') {
-    userEntry.textContent += button.target.textContent;
-   };
+    if (button.target.id !== 'button-container') {
+        if (button.target.id !== 'equals' && button.target.parentNode.id !== 'edit') {
+            userEntry.textContent += button.target.textContent;
+        };
 
-   if(button.target.classList.contains('oper')){
-    operBtns.forEach(btn => btn.style.color = 'white');
-    button.target.style.color = 'orange';
-   } else {
-    operBtns.forEach(btn => btn.style.color = 'white');
-   };
+        if (button.target.classList.contains('oper')) {
+            operBtns.forEach(btn => btn.style.color = 'white');
+            button.target.style.color = 'orange';
+        } else {
+            operBtns.forEach(btn => btn.style.color = 'white');
+        };
+    };
+    if (button.target.id === 'equals') {
+        const result = shuntingYard(userEntry.textContent);
+        userEntry.textContent = result;
+    };
+    if (button.target.id === 'cancel') userEntry.textContent = '';
 
-   if(button.target.id === 'cancel') userEntry.textContent = ''; 
-   };
+    if (button.target.id === 'backspace') userEntry.textContent = userEntry.textContent.slice(0, -1);
 });
 
 /*const buttons = document.querySelectorAll('button');
@@ -47,10 +64,10 @@ buttons.forEach(button => {
 
 
 function add(numOne, numTwo) {
+    //prevents numbers being concatenated 
     const a = Number(numOne);
     const b = Number(numTwo);
-    const result = (a+b).toString()
-    console.log(result);
+    const result = (a + b).toString()
     return result;
 };
 
@@ -85,7 +102,7 @@ const oper = {
         fn: multiply,
         prec: 2,
     },
-    '/': {
+    '÷': {
         fn: divide,
         prec: 2,
     },
@@ -97,45 +114,44 @@ function shuntingYard(infixExpr) {
     const output = [];
     const stack = [];
     let accum = '';
-    //POOOOOO
-    for (let i = 0; i<expr.length; i++){
-        if (isNaN(expr[i])) {
+    for (let i = 0; i < expr.length; i++) {
+        
+        if (isNaN(expr[i]) && expr[i] !== '.') {
             if (expr[i] === '(' || !stack.length || stack[stack.length - 1] === '(') {
                 stack.push(expr[i]);
             } else if (expr[i] !== ')') {
-               while (stack[stack.length-1] !== '(' && stack.length && oper[expr[i]].prec <= oper[stack[stack.length - 1]].prec){
+                while (stack[stack.length - 1] !== '(' && stack.length && oper[expr[i]].prec <= oper[stack[stack.length - 1]].prec) {
                     output.push(stack.pop());
                 };
                 stack.push(expr[i]);
             } else {
-                while(stack[stack.length-1] !== '('){
+                while (stack[stack.length - 1] !== '(') {
                     output.push(stack.pop());
                 };
                 stack.pop();
             }
         } else {
             //if next char is number, add to accumulate
-            if(!isNaN(expr[i+1])){
+            if (!isNaN(expr[i + 1]) || expr[i + 1] === '.') {
                 accum += expr[i];
             } else {
-                //next char is oper, check if last digit else single digit num
-                if(accum){
-                    accum+=expr[i];
+                //next char is oper, then check if last digit, else single digit num
+                if (accum) {
+                    accum += expr[i];
                     output.push(accum);
                     accum = '';
                 } else output.push(expr[i]);
             };
         };
-        console.log(`outp(${i+1}) ${output}`);
-        console.log(`stak(${i+1}) ${stack}`);
-    };
 
+    };
+    
+    //pushes remaining operators onto output
     while (stack.length) {
         output.push(stack.pop());
     };
 
-    console.log(output.join('')); //postfix expression
-
+    //evaluates postfix expression
     output.forEach(char => {
         if (!isNaN(char)) {
             stack.push(char);
@@ -146,12 +162,13 @@ function shuntingYard(infixExpr) {
         };
     });
 
+    //checks for incorrect '-' characters after initial evaluation
     if (stack[0].includes('-') && stack[0][0] !== '-') {
         return shuntingYard(stack[0]);
     } else {
-    let expression = stack.toString();
-    
-    return expression;
+        let expression = stack.toString();
+
+        return expression;
     };
 };
 
