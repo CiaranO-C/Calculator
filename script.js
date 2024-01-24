@@ -1,47 +1,65 @@
 
-const userEntry = document.querySelector('#display');
-const btnContainer = document.querySelector('#button-container');
+//separate display from logic
+//imrpove keydown listener conditions
+//improve button click listener conditions
+//write separate function for updating operator button color
+
+const display = document.querySelector('#display');
+const buttonList = document.querySelectorAll('button');
 const operBtns = document.querySelectorAll('.oper');
 const backspace = document.querySelector('#backspace');
+let userEntry = [];
 
-//handles keyboard entries
+
 window.addEventListener('keydown', event => {
-    if (!isNaN(event.key)) userEntry.textContent += event.key;
+    const key = event.key;
 
-    if (oper.hasOwnProperty(event.key)) {
-        userEntry.textContent += event.key;
-    };
-
-    if (event.key === '/') userEntry.textContent += '÷';
-
-    if (event.key === 'Enter') {
-        const result = shuntingYard(userEntry.textContent);
-        userEntry.textContent = result;
-    };
+    buttonList.forEach(button => {
+        if (key === button.value) {
+            userEntry.push(key);
+            (key === '/')
+                ? display.textContent += '÷'
+                : display.textContent += key;
+        } else if (key === 'Enter') {
+            const result = shuntingYard(userEntry);
+            userEntry = result; 
+            display.textContent = result.join('');
+        };
+    });
 });
 
-//handles button clicks
-btnContainer.addEventListener('click', button => {
-    if (button.target.id !== 'button-container') {
-        if (button.target.id !== 'equals' && button.target.parentNode.id !== 'edit') {
-            userEntry.textContent += button.target.textContent;
-        };
+buttonList.forEach(button => {
 
-        if (button.target.classList.contains('oper')) {
-            operBtns.forEach(btn => btn.style.color = 'white');
-            button.target.style.color = 'orange';
+    button.addEventListener('click', event => {
+        const btn = event.target;
+        buttonColor(btn);
+
+        if (btn.classList.contains('alterDisplay')) {
+            if (btn.id === 'cancel') {
+                display.textContent = '';
+                userEntry = [];
+            } else if (btn.id === 'backspace') {
+                display.textContent = display.textContent.slice(0, -1);
+                userEntry.pop();
+            } else {
+                const result = shuntingYard(userEntry);
+                userEntry = result; //make sure func returns array not string
+                display.textContent = result.join('');
+            };
         } else {
-            operBtns.forEach(btn => btn.style.color = 'white');
+            display.textContent += btn.textContent;
+            userEntry.push(btn.value);
         };
-    };
-    if (button.target.id === 'equals') {
-        const result = shuntingYard(userEntry.textContent);
-        userEntry.textContent = result;
-    };
-    if (button.target.id === 'cancel') userEntry.textContent = '';
-
-    if (button.target.id === 'backspace') userEntry.textContent = userEntry.textContent.slice(0, -1);
+    });
 });
+
+function buttonColor(button) {
+    operBtns.forEach(btn => btn.style.color = 'white');
+
+    if (button.classList.contains('oper')) {
+        button.style.color = 'orange'
+    };
+};
 
 
 function add(numOne, numTwo) {
@@ -73,35 +91,34 @@ function percentOf(numOne, numTwo) {
 const oper = {
     '+': {
         fn: add,
-        prec: 1,
+        precedence: 1,
     },
     '-': {
         fn: subtract,
-        prec: 1,
+        precedence: 1,
     },
     '*': {
         fn: multiply,
-        prec: 2,
+        precedence: 2,
     },
-    '÷': {
+    '/': {
         fn: divide,
-        prec: 2,
+        precedence: 2,
     },
 };
 
 
-function shuntingYard(infixExpr) {
-    const expr = infixExpr.split('');
+function shuntingYard(expr) {
     const output = [];
     const stack = [];
     let accum = '';
     for (let i = 0; i < expr.length; i++) {
-        
+
         if (isNaN(expr[i]) && expr[i] !== '.') {
             if (expr[i] === '(' || !stack.length || stack[stack.length - 1] === '(') {
                 stack.push(expr[i]);
             } else if (expr[i] !== ')') {
-                while (stack[stack.length - 1] !== '(' && stack.length && oper[expr[i]].prec <= oper[stack[stack.length - 1]].prec) {
+                while (stack[stack.length - 1] !== '(' && stack.length && oper[expr[i]].precedence <= oper[stack[stack.length - 1]].precedence) {
                     output.push(stack.pop());
                 };
                 stack.push(expr[i]);
@@ -126,7 +143,7 @@ function shuntingYard(infixExpr) {
         };
 
     };
-    
+
     //pushes remaining operators onto output
     while (stack.length) {
         output.push(stack.pop());
@@ -147,7 +164,7 @@ function shuntingYard(infixExpr) {
     if (stack[0].includes('-') && stack[0][0] !== '-') {
         return shuntingYard(stack[0]);
     } else {
-        let expression = stack.toString();
+        let expression = stack;
 
         return expression;
     };
