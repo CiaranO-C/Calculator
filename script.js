@@ -1,9 +1,4 @@
 
-//separate display from logic
-//imrpove keydown listener conditions
-//improve button click listener conditions
-//write separate function for updating operator button color
-
 const display = document.querySelector('#display');
 const buttonList = document.querySelectorAll('button');
 const operBtns = document.querySelectorAll('.oper');
@@ -20,12 +15,20 @@ window.addEventListener('keydown', event => {
             (key === '/')
                 ? display.textContent += '÷'
                 : display.textContent += key;
-        } else if (key === 'Enter') {
-            const result = shuntingYard(userEntry);
-            userEntry = result; 
-            display.textContent = result.join('');
         };
     });
+
+    if (key === 'Enter') {
+        const result = convertExpression(userEntry);
+        userEntry = result;
+        display.textContent = result.join('');
+    } else if (key === 'Escape') {
+        userEntry = [];
+        display.textContent = '';
+    } else if (key === 'Backspace') {
+        userEntry.pop();
+        display.textContent = display.textContent.slice(0, -1);
+    };
 });
 
 buttonList.forEach(button => {
@@ -42,8 +45,8 @@ buttonList.forEach(button => {
                 display.textContent = display.textContent.slice(0, -1);
                 userEntry.pop();
             } else {
-                const result = shuntingYard(userEntry);
-                userEntry = result; //make sure func returns array not string
+                const result = convertExpression(userEntry);
+                userEntry = result;
                 display.textContent = result.join('');
             };
         } else {
@@ -107,68 +110,75 @@ const oper = {
     },
 };
 
-
-function shuntingYard(expr) {
+//converts to postfix expression
+function convertExpression(expr) {
     const output = [];
     const stack = [];
     let accum = '';
-    for (let i = 0; i < expr.length; i++) {
 
-        if (isNaN(expr[i]) && expr[i] !== '.') {
-            if (expr[i] === '(' || !stack.length || stack[stack.length - 1] === '(') {
-                stack.push(expr[i]);
-            } else if (expr[i] !== ')') {
-                while (stack[stack.length - 1] !== '(' && stack.length && oper[expr[i]].precedence <= oper[stack[stack.length - 1]].precedence) {
+    for (let i = 0; i < expr.length; i++) {
+        let top = stack.length - 1;
+        const char = expr[i];
+        const next = expr[i + 1];
+
+        if (isNaN(char) && char !== '.') {
+
+            if (!stack.length || char === '(' || stack[top] === '(') {
+                stack.push(char);
+            } else if (oper.hasOwnProperty(char)) {
+                while (stack.length && stack[top] !== '(' && oper[char].precedence <= oper[stack[top]].precedence) {
                     output.push(stack.pop());
+                    top = stack.length - 1;
                 };
-                stack.push(expr[i]);
+                stack.push(char);
             } else {
-                while (stack[stack.length - 1] !== '(') {
+                while (stack[top] !== '(') {
                     output.push(stack.pop());
+                    top = stack.length - 1;
                 };
-                stack.pop();
-            }
+                stack.pop(); //pops remaining '('
+            };
         } else {
-            //if next char is number, add to accumulate
-            if (!isNaN(expr[i + 1]) || expr[i + 1] === '.') {
-                accum += expr[i];
+
+            if (!isNaN(next) || next === '.') {
+                accum += char;
+            } else if (accum) {
+                accum += char;
+                output.push(accum);
+                accum = '';
             } else {
-                //next char is oper, then check if last digit, else single digit num
-                if (accum) {
-                    accum += expr[i];
-                    output.push(accum);
-                    accum = '';
-                } else output.push(expr[i]);
+                output.push(char); //pushes single digit numbers
             };
         };
-
     };
-
-    //pushes remaining operators onto output
+    //pushes remaining operators
     while (stack.length) {
         output.push(stack.pop());
     };
+    const result = [evaluate(output)];
 
-    //evaluates postfix expression
-    output.forEach(char => {
+    return result;
+};
+
+function evaluate(postfixExpr) {
+    const result = [];
+
+    postfixExpr.forEach(char => {
         if (!isNaN(char)) {
-            stack.push(char);
+            result.push(char);
         } else {
-            const [num2, num1] = [stack.pop(), stack.pop()];
-            const result = (oper[char].fn(num1, num2)).toString();
-            stack.push(result);
+            const [num2, num1] = [result.pop(), result.pop()];
+            const output = (oper[char].fn(num1, num2)).toString();
+            result.push(output);
         };
     });
 
     //checks for incorrect '-' characters after initial evaluation
-    if (stack[0].includes('-') && stack[0][0] !== '-') {
-        return shuntingYard(stack[0]);
+    if (result[0].includes('-') && result[0][0] !== '-') {
+        //splits element into char array, passes as argument
+        const newResult = convertExpression(result[0].split(''));
     } else {
-        let expression = stack;
-
-        return expression;
+        return result;
     };
 };
-
-
 
