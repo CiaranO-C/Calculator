@@ -1,6 +1,6 @@
 
 const display = document.querySelector('#display');
-const buttonList = document.querySelectorAll('button');
+const buttonList = Array.from(document.querySelectorAll('button'));
 const operBtns = document.querySelectorAll('.oper');
 const backspace = document.querySelector('#backspace');
 let userEntry = [];
@@ -9,14 +9,7 @@ let userEntry = [];
 window.addEventListener('keydown', event => {
     const key = event.key;
 
-    buttonList.forEach(button => {
-        if (key === button.value) {
-            userEntry.push(key);
-            (key === '/')
-                ? display.textContent += '÷'
-                : display.textContent += key;
-        };
-    });
+   
 
     if (key === 'Enter') {
         const result = convertExpression(userEntry);
@@ -28,6 +21,15 @@ window.addEventListener('keydown', event => {
     } else if (key === 'Backspace') {
         userEntry.pop();
         display.textContent = display.textContent.slice(0, -1);
+    } else {
+        buttonList.some(button => {
+            if (key === button.value) {
+                userEntry.push(key);
+                (key === '/')
+                    ? display.textContent += '÷'
+                    : display.textContent += key;
+            };
+        });
     };
 });
 
